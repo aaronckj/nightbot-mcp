@@ -13,6 +13,8 @@ EXPECTED = {
     "list_timers", "add_timer", "toggle_timer", "delete_timer",
     "list_regulars", "add_regular", "remove_regular",
     "get_spam_filter", "update_spam_filter", "add_banned_phrases",
+    "list_default_commands", "toggle_default_command",
+    "song_requests_settings", "song_queue", "song_skip", "song_queue_clear",
     "send_chat_message", "health_check",
 }
 

@@ -255,6 +255,83 @@ def build_app() -> FastMCP:
         return {"added": [p for p in phrases if p not in lines], "total": len(merged)}
 
     @mcp.tool()
+    def list_default_commands() -> list[dict]:
+        """List Nightbot's built-in commands (!commands, !title, etc.) and status."""
+        res = get_nb().request("GET", "/commands/default")
+        return [
+            {
+                "name": c["name"],
+                "enabled": c.get("enabled"),
+                "user_level": c.get("userLevel"),
+            }
+            for c in res.get("commands", [])
+        ]
+
+    @mcp.tool()
+    def toggle_default_command(name: str, enabled: bool, dry_run: bool = False) -> dict:
+        """Enable or disable a built-in command by name (e.g. 'songs', 'title')."""
+        if dry_run:
+            return preview("toggle_default_command", {"name": name, "enabled": enabled})
+        get_nb().request(
+            "PUT", f"/commands/default/{name}", {"enabled": "true" if enabled else "false"}
+        )
+        return {"command": name, "enabled": enabled}
+
+    @mcp.tool()
+    def song_requests_settings(
+        enabled: bool | None = None,
+        user_level: str | None = None,
+        playlist: str | None = None,
+        dry_run: bool = False,
+    ) -> dict:
+        """Get song-request settings, or update them when arguments are given.
+        playlist: monstercat|youtube|soundcloud (provider-dependent)."""
+        nb = get_nb()
+        if enabled is None and user_level is None and playlist is None:
+            return nb.request("GET", "/song_requests")
+        body: dict = {}
+        if enabled is not None:
+            body["enabled"] = "true" if enabled else "false"
+        if user_level is not None:
+            body["userLevel"] = user_level
+        if playlist is not None:
+            body["playlist"] = playlist
+        if dry_run:
+            return preview("song_requests_settings", body)
+        nb.request("PUT", "/song_requests", body)
+        return {"updated": list(body)}
+
+    @mcp.tool()
+    def song_queue(limit: int = 20) -> list[dict]:
+        """List the current song-request queue."""
+        res = get_nb().request("GET", "/song_requests/queue")
+        return [
+            {
+                "id": s["_id"],
+                "title": s.get("track", {}).get("title"),
+                "requested_by": s.get("user", {}).get("displayName"),
+                "provider": s.get("track", {}).get("provider"),
+            }
+            for s in res.get("queue", [])[:limit]
+        ]
+
+    @mcp.tool()
+    def song_skip(dry_run: bool = False) -> dict:
+        """Skip the currently playing song request."""
+        if dry_run:
+            return preview("song_skip", {})
+        get_nb().request("POST", "/song_requests/queue/skip")
+        return {"skipped": True}
+
+    @mcp.tool()
+    def song_queue_clear(dry_run: bool = False) -> dict:
+        """Clear the entire song-request queue."""
+        if dry_run:
+            return preview("song_queue_clear", {})
+        get_nb().request("DELETE", "/song_requests/queue")
+        return {"cleared": True}
+
+    @mcp.tool()
     def send_chat_message(message: str, dry_run: bool = False) -> dict:
         """Send a chat message as Nightbot."""
         if dry_run:
