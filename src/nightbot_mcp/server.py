@@ -245,7 +245,8 @@ def build_app() -> FastMCP:
         """Append phrases to the chat blacklist (fetch-merge-update; no duplicates)."""
         nb = get_nb()
         current = nb.request("GET", "/spam_protection/blacklist")
-        existing = current.get("blacklist", "")
+        # Nightbot wraps filter settings in a "filter" object.
+        existing = current.get("filter", current).get("blacklist", "")
         lines = [ln for ln in existing.splitlines() if ln.strip()] if isinstance(existing, str) \
             else list(existing or [])
         merged = lines + [p for p in phrases if p not in lines]

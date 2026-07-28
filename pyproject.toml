@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "nightbot-mcp"
-version = "0.1.1"
+version = "0.1.2"
 description = "MCP server for Nightbot: chat commands, timers, regulars, and spam-protection filters (including the banned-phrase blacklist) via the official Nightbot API."
 readme = "README.md"
 license = "MIT"

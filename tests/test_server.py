@@ -100,7 +100,7 @@ def test_dry_run_no_call():
 
 def test_add_banned_phrases_merges():
     app, opener = make_app(
-        {"/spam_protection/blacklist": {"blacklist": "spamword\nscamsite"}}
+        {"/spam_protection/blacklist": {"filter": {"blacklist": "spamword\nscamsite"}}}
     )
     out = call_tool(app, "add_banned_phrases", {"phrases": ["acme", "scamsite"]})
     assert out["added"] == ["acme"]
